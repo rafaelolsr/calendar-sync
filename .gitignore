@@ -1,0 +1,30 @@
+# SwiftPM and generated app bundles
+.build/
+.swiftpm/
+*.app/
+*.dSYM/
+
+# Local editor and session state
+.DS_Store
+xcuserdata/
+*.xcuserstate
+.sc/
+.super.engineering/
+.superconductor/
+.agents/
+.codex/
+.idea/
+.vscode/
+
+# Local secrets, calendar snapshots, and diagnostic exports
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+recovery*.json
+*diagnostics*.json
+scheduled-run.json
+*.ics
+*.log
+tmp/

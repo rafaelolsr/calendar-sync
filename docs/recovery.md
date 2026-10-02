@@ -1,0 +1,22 @@
+# Rollback and recovery
+
+[← Back to CalendarSync](../README.md)
+
+
+1. After applying a sync, click **Rollback latest sync…** in Activity.
+2. Review the generated events to remove or restore and any blocked items. The preview only reads calendars.
+3. Click **Roll back…**, then **Roll back verified changes** to confirm.
+
+Rollback removes events created by that sync and restores the saved fields of CalendarSync-owned events it updated or deleted. Original source events are never changed. It turns Automatic Blocking off, including when some rollback operations fail. Calendar permissions and writable destinations are still required, but rollback does not require Automatic Blocking to be enabled or the original source calendars to remain selected.
+
+A recovery entry is written before each sync operation commits. Successful sync writes are retained on error; rollback is an explicit action, not an automatic response to every write error. Interrupted syncs and interrupted rollbacks can be recovered after restarting the app. Completed rollback entries are removed one at a time; failed entries remain available under **Resume rollback…**. Sync Now and Shortcuts cannot start a new sync while a rollback is pending.
+
+Rollback verifies the ownership URL, destination, and current event fields again when applied. Conflicting ownership, edited events, attendees, recurrence rules, and email or procedure alarms are left untouched and reported. Ordinary alerts and map locations are saved for restoration. Older snapshots tolerate provider-added alerts and availability values that were originally unavailable; titles, times, locations, notes, and ownership markers are still checked. Restore any unavailable calendar or resolve the conflict, refresh the preview, and retry. Never delete events solely by the title `Busy` or clear local mappings as a substitute for rollback.
+
+Only the most recent sync that attempted changes is retained. A later sync with writes replaces its rollback snapshot; dry runs and syncs with no writes preserve it. There is no snapshot for syncs performed by older app versions. Deleted generated events are recreated with their saved fields and ownership marker, so their provider event identifiers may change. The snapshot contains generated-event details locally and should be retained until recovery is finished.
+
+For troubleshooting, launch the packaged app with `--diagnose-rollback /absolute/path/report.json`. This reads calendars and writes aggregate counts and a source-content digest, without event titles or identifiers in the report. `--resume-confirmed-rollback /absolute/path/result.json` resumes only a rollback previously confirmed in the app; it does not start a new rollback. Both commands require the app's normal calendar access and exit when finished.
+
+Creation evidence is retained in the recovery file across later syncs and rollbacks, so a provider-reappeared copy can still be checked against its original snapshot. For leftover recovery, `--audit-leftovers /absolute/path/recovery-evidence.json /absolute/path/report.json` compares live marked events with current mappings and saved creation snapshots. It reports tracked events, verified old creations, and conflicts without calendar writes. `--clean-verified-leftovers /absolute/path/recovery-evidence.json /absolute/path/result.json` removes only unchanged historical creations that have no current mapping. Unknown markers, duplicate markers, wrong destinations, edited events, attendees, and recurrence rules remain protected. Cleanup turns Automatic Blocking off, keeps a separate resumable journal, and preserves the current sync's mappings and latest rollback snapshot. Repeating the cleanup command resumes interrupted cleanup; pending cleanup blocks new sync writes.
+
+To explicitly remove **all currently mapped CalendarSync-generated events**, including copies and Busy blocks from earlier sync runs, launch with `--remove-all-generated-events /absolute/path/result.json`. This is a full reset, rather than cleanup of untracked historical copies. It verifies each marker and destination, saves current generated-event snapshots, turns Automatic Blocking off, and uses the resumable rollback deletion path. Original source events are never targeted. Conflicting ownership, duplicate markers, unavailable calendars, attendees, or unsupported alarms stop preflight before any deletion. Repeat the command to resume the same reset after an interruption; it will not replace snapshots for a different pending rollback.
